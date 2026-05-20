@@ -1,0 +1,33 @@
+.prototype-callout-box {
+    border: 3px solid #dc2626 !important;
+    background: #fff5f5 !important;
+    color: #991b1b !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    margin: 16px 0 18px 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    animation: calloutPulse 1.6s ease-in-out infinite !important;
+    font-size: 16px !important;
+}
+
+.prototype-arrow-symbol {
+    font-size: 34px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    color: #dc2626 !important;
+    animation: arrowBounce 1s ease-in-out infinite !important;
+}
+
+@keyframes arrowBounce {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(7px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes calloutPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35); }
+    70%  { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
