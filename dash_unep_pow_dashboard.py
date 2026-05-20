@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import ast
 import html as html_lib
@@ -9,13 +8,11 @@ import plotly.express as px
 from dash import Dash, dcc, html, dash_table, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 
-
 # ============================================================
 # DATA PATHS
 # ============================================================
 
 DATA_DIR = Path("data")
-
 
 # ============================================================
 # INDICATOR CONFIGURATION
@@ -36,7 +33,8 @@ INDICATORS = [
         "relevant_col_candidates": ["climate_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
-        "evidence_flag_candidates": ["evidence_of_unep_attributed_sp1_2_policy_adoption", "evidence_of_unep_attributed_sp1_2_policy_standard_action"],
+        "evidence_flag_candidates": ["evidence_of_unep_attributed_sp1_2_policy_adoption",
+                                     "evidence_of_unep_attributed_sp1_2_policy_standard_action"],
         "extent_candidates": ["extent_of_unep_attributed_sp1_2_evidence"],
         "justification_candidates": ["climate_justification", "best_evidence_climate_justification"],
         "instrument_candidates": ["instrument_type", "best_evidence_instrument_type"],
@@ -74,18 +72,20 @@ INDICATORS = [
         "indicator_file": DATA_DIR / "sp3_1_chemicals_pollution_indicator_summary.csv",
         "docs_file": DATA_DIR / "sp3_1_chemicals_pollution_doc_level_deduped.csv",
         "main_score_candidates": ["SP3_1_Ci_t_UNEP", "Ci_t_UNEP"],
-        "general_score_candidates": ["policy_regulation_score", "chemicals_policy_score", "pollution_policy_score", "policy_score"],
+        "general_score_candidates": ["policy_regulation_score", "chemicals_policy_score", "pollution_policy_score",
+                                     "policy_score"],
         "relevant_col_candidates": ["chemicals_relevant", "pollution_relevant", "policy_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
         "evidence_flag_candidates": [
-           "evidence_of_unep_attributed_sp3_1_policy_regulatory_action",
-           "evidence_of_unep_attributed_sp3_1_policy_law_regulation",
-           "evidence_of_unep_attributed_sp3_1_policy_action",
-           "evidence_of_unep_attributed_sp3_1_evidence",
+            "evidence_of_unep_attributed_sp3_1_policy_regulatory_action",
+            "evidence_of_unep_attributed_sp3_1_policy_law_regulation",
+            "evidence_of_unep_attributed_sp3_1_policy_action",
+            "evidence_of_unep_attributed_sp3_1_evidence",
         ],
         "extent_candidates": ["extent_of_unep_attributed_sp3_1_evidence"],
-        "justification_candidates": ["chemicals_justification", "pollution_justification", "policy_justification", "best_evidence_chemicals_justification"],
+        "justification_candidates": ["chemicals_justification", "pollution_justification", "policy_justification",
+                                     "best_evidence_chemicals_justification"],
         "instrument_candidates": ["instrument_type", "best_evidence_instrument_type"],
         "general_metric_label": "Chemicals/pollution policy evidence score",
         "unep_metric_label": "UNEP-attributed chemicals/pollution evidence score",
@@ -127,7 +127,8 @@ INDICATORS = [
         "indicator_file": DATA_DIR / "sp5_1_env_law_indicator_summary.csv",
         "docs_file": DATA_DIR / "sp5_1_env_law_doc_level_deduped.csv",
         "main_score_candidates": ["SP5_1_Ci_t_UNEP", "Ci_t_UNEP"],
-        "general_score_candidates": ["env_law_score", "environmental_law_score", "law_governance_score", "policy_support_score"],
+        "general_score_candidates": ["env_law_score", "environmental_law_score", "law_governance_score",
+                                     "policy_support_score"],
         "relevant_col_candidates": ["env_law_relevant", "environmental_law_relevant", "law_governance_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
@@ -137,7 +138,14 @@ INDICATORS = [
             "evidence_of_unep_attributed_sp5_1_evidence",
         ],
         "extent_candidates": ["extent_of_unep_attributed_sp5_1_evidence"],
-        "justification_candidates": ["env_law_justification", "environmental_law_justification", "law_governance_justification", "best_evidence_env_law_justification"],
+        "justification_candidates": [
+            "law_justification",
+            "best_evidence_law_justification",
+            "env_law_justification",
+            "environmental_law_justification",
+            "law_governance_justification",
+            "best_evidence_env_law_justification",
+        ],
         "instrument_candidates": ["instrument_type", "support_type", "best_evidence_instrument_type"],
         "general_metric_label": "Environmental law/policy support score",
         "unep_metric_label": "UNEP-attributed environmental law evidence score",
@@ -410,6 +418,7 @@ def data_table(df, page_size=10, style_extra=None):
         ]
     )
 
+
 def metric_card(title, value, subtitle=None):
     return dbc.Card(
         dbc.CardBody([
@@ -418,6 +427,36 @@ def metric_card(title, value, subtitle=None):
             html.Div(subtitle or "", className="metric-subtitle"),
         ]),
         className="metric-card h-100",
+    )
+
+
+def sp71_warning_wrapper(content):
+    """
+    Adds a strong warning banner and watermark to SP7.1 sections.
+    Used because SP7.1 outputs require further validation and fine-tuning.
+    """
+    return html.Div(
+        [
+            dbc.Alert(
+                [
+                    html.Strong("Important notice — SP7.1 results: "),
+                    html.Span(
+                        "Fine-tuning with human-labelled data and prompt refinement "
+                        "are strongly needed for this indicator."
+                    ),
+                ],
+                color="danger",
+                className="sp71-warning-banner",
+            ),
+
+            html.Div(
+                [
+                    html.Div("FINE-TUNING STRONGLY NEEDED", className="sp71-watermark-text"),
+                    html.Div(content, className="sp71-content")
+                ],
+                className="sp71-watermark-wrapper",
+            ),
+        ]
     )
 
 
@@ -534,10 +573,12 @@ def normalize_general_period(config, bundle, docs_df):
         general_period = clean_timewindow(bundle["country_period"].copy())
 
         if "Ci_t_country_capacity" in general_period.columns:
-            general_period["general_score"] = pd.to_numeric(general_period["Ci_t_country_capacity"], errors="coerce").fillna(0)
+            general_period["general_score"] = pd.to_numeric(general_period["Ci_t_country_capacity"],
+                                                            errors="coerce").fillna(0)
         elif "general_score" not in general_period.columns:
             score_col = first_existing_col(general_period, config["general_score_candidates"])
-            general_period["general_score"] = pd.to_numeric(general_period[score_col], errors="coerce").fillna(0) if score_col else 0
+            general_period["general_score"] = pd.to_numeric(general_period[score_col], errors="coerce").fillna(
+                0) if score_col else 0
 
         if "count_capacity_evidence_docs" in general_period.columns:
             general_period["count_general_evidence_docs"] = general_period["count_capacity_evidence_docs"]
@@ -546,6 +587,29 @@ def normalize_general_period(config, bundle, docs_df):
 
         if "best_evidence_capacity_justification" in general_period.columns and "best_evidence_justification" not in general_period.columns:
             general_period["best_evidence_justification"] = general_period["best_evidence_capacity_justification"]
+
+        # Standardize best-evidence justification column across indicators
+        if "best_evidence_justification" not in general_period.columns:
+            possible_best_justification_cols = [
+                "best_evidence_law_justification",
+                "best_evidence_env_law_justification",
+                "best_evidence_climate_justification",
+                "best_evidence_nature_justification",
+                "best_evidence_chemicals_justification",
+                "best_evidence_finance_justification",
+                "best_evidence_digital_justification",
+                "best_evidence_capacity_justification",
+                "law_justification",
+                "env_law_justification",
+            ]
+
+            best_justification_col = first_existing_col(
+                general_period,
+                possible_best_justification_cols
+            )
+
+            if best_justification_col:
+                general_period["best_evidence_justification"] = general_period[best_justification_col]
 
         country_docs_for_general = clean_timewindow(bundle["country_docs"])
     else:
@@ -566,7 +630,7 @@ def filter_general_docs(config, docs, country, period):
     df = df[
         (df["Entity"].astype(str).str.strip() == str(country).strip())
         & (df["TimeWindow"].astype(str).str.strip() == str(period).strip())
-    ].copy()
+        ].copy()
 
     if df.empty:
         return df
@@ -595,7 +659,7 @@ def filter_unep_docs(config, docs, country, period):
     df = df[
         (df["Entity"].astype(str).str.strip() == str(country).strip())
         & (df["TimeWindow"].astype(str).str.strip() == str(period).strip())
-    ].copy()
+        ].copy()
 
     if df.empty:
         return df
@@ -753,7 +817,8 @@ def build_indicator_summary_df():
             if not df.empty and "TimeWindow" in df.columns:
                 all_periods.update(df["TimeWindow"].dropna().astype(str).unique())
 
-        unep_country_periods = int(period_df["unep_evidence_flag_for_app"].sum()) if not period_df.empty and "unep_evidence_flag_for_app" in period_df.columns else 0
+        unep_country_periods = int(period_df[
+                                       "unep_evidence_flag_for_app"].sum()) if not period_df.empty and "unep_evidence_flag_for_app" in period_df.columns else 0
 
         rows.append({
             "Subprogramme": cfg["subprogramme"],
@@ -904,7 +969,9 @@ def score_map_fig(df, value_col, title, color_scale="Viridis"):
         locationmode="country names",
         color=value_col,
         hover_name="Entity",
-        hover_data=[c for c in ["TimeWindow", value_col, "count_general_evidence_docs", "count_attributable_docs_nonzero_unep", "best_evidence_title"] if c in df.columns],
+        hover_data=[c for c in
+                    ["TimeWindow", value_col, "count_general_evidence_docs", "count_attributable_docs_nonzero_unep",
+                     "best_evidence_title"] if c in df.columns],
         color_continuous_scale=color_scale,
         range_color=[0, 100],
         title=title,
@@ -968,7 +1035,8 @@ The dashboard separates:
             dbc.Col(metric_card("Indicators covered", len(INDICATORS) + 1), md=6),
         ], className="g-3 mb-3"),
         dbc.Accordion([
-            dbc.AccordionItem(data_table(scope_table, page_size=20), title="Show prototype country/entity scope by indicator")
+            dbc.AccordionItem(data_table(scope_table, page_size=20),
+                              title="Show prototype country/entity scope by indicator")
         ], start_collapsed=True, className="mb-4"),
         html.H3("Prototype indicator values based on the current analysis"),
 
@@ -1045,7 +1113,9 @@ The dashboard separates:
         data_table(summary_df, page_size=20),
         html.Hr(),
         html.H3("Summary by indicator"),
-        html.P("Note: the charts show country-period counts across all loaded periods, while the Prototype value table above shows the latest available period only.", className="text-muted"),
+        html.P(
+            "Note: the charts show country-period counts across all loaded periods, while the Prototype value table above shows the latest available period only.",
+            className="text-muted"),
         dbc.Row([
             dbc.Col(dcc.Graph(figure=fig_general), md=6),
             dbc.Col(dcc.Graph(figure=fig_unep), md=6),
@@ -1176,7 +1246,8 @@ def indicator_layout(cfg):
 
 def overton_42_layout():
     if overton_42.empty:
-        return dbc.Alert("No Indicator 4.2 data found. Please add data/overton_42_government_unep_candidates.csv", color="warning")
+        return dbc.Alert("No Indicator 4.2 data found. Please add data/overton_42_government_unep_candidates.csv",
+                         color="warning")
 
     valid = overton_42[
         ~overton_42["TimeWindow_42"].astype(str).isin(["Outside dashboard periods", "Unknown", "nan", "None", ""])
@@ -1282,20 +1353,27 @@ def make_indicator_callbacks(cfg):
     def render_section(section):
         p = PREPARED[cfg["id"]]
 
+        is_sp71 = cfg["id"] == "SP7.1"
+
         if not p["entities"] and not p["periods"]:
-            return dbc.Alert("No data found for this indicator. Please add the expected CSV files to the data/ folder.", color="warning")
+            return dbc.Alert("No data found for this indicator. Please add the expected CSV files to the data/ folder.",
+                             color="warning")
 
         if section == "map":
-            return html.Div([
+            section_content = html.Div([
                 html.H4(f"🗺️ {cfg['id']} Countries/Entities Assessed Map"),
-                dcc.Graph(figure=assessed_map_fig(p["entities"], f"{cfg['id']} countries/entities included in the assessment")),
+                dcc.Graph(figure=assessed_map_fig(p["entities"],
+                                                  f"{cfg['id']} countries/entities included in the assessment")),
                 data_table(pd.DataFrame({"Entity": p["entities"], "assessed": "Assessed"}), page_size=20),
             ])
+            return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "general":
-            opts = [{"label": x, "value": x} for x in sorted(p["general_period"]["TimeWindow"].dropna().astype(str).unique())] if not p["general_period"].empty and "TimeWindow" in p["general_period"].columns else []
+            opts = [{"label": x, "value": x} for x in
+                    sorted(p["general_period"]["TimeWindow"].dropna().astype(str).unique())] if not p[
+                "general_period"].empty and "TimeWindow" in p["general_period"].columns else []
             default = opts[0]["value"] if opts else None
-            return html.Div([
+            section_content = html.Div([
                 html.H4(f"📊 {cfg['id']} Country/Institution Evidence — {cfg['short_name']}"),
                 dbc.Row([
                     dbc.Col([
@@ -1305,11 +1383,14 @@ def make_indicator_callbacks(cfg):
                 ], className="mb-3"),
                 html.Div(id=f"{prefix}-general-content"),
             ])
+            return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "unep":
-            opts = [{"label": x, "value": x} for x in sorted(p["period"]["TimeWindow"].dropna().astype(str).unique())] if not p["period"].empty and "TimeWindow" in p["period"].columns else []
+            opts = [{"label": x, "value": x} for x in
+                    sorted(p["period"]["TimeWindow"].dropna().astype(str).unique())] if not p[
+                "period"].empty and "TimeWindow" in p["period"].columns else []
             default = opts[0]["value"] if opts else None
-            return html.Div([
+            section_content = html.Div([
                 html.H4(f"🌱 {cfg['id']} UNEP-attributed Evidence — {cfg['short_name']}"),
                 dbc.Row([
                     dbc.Col([
@@ -1319,32 +1400,37 @@ def make_indicator_callbacks(cfg):
                 ], className="mb-3"),
                 html.Div(id=f"{prefix}-unep-content"),
             ])
+            return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "report":
             period_opts = [{"label": x, "value": x} for x in p["periods"]]
             entity_opts = [{"label": x, "value": x} for x in p["entities"]]
-            return html.Div([
+            section_content = html.Div([
                 html.H4(f"📄 {cfg['id']} Country-Period Report — {cfg['short_name']}"),
                 dbc.Row([
                     dbc.Col([
                         html.Label(f"Select {cfg['id']} report period"),
-                        dcc.Dropdown(id=f"{prefix}-report-period", options=period_opts, value=p["periods"][0] if p["periods"] else None, clearable=False),
+                        dcc.Dropdown(id=f"{prefix}-report-period", options=period_opts,
+                                     value=p["periods"][0] if p["periods"] else None, clearable=False),
                     ], md=6),
                     dbc.Col([
                         html.Label(f"Select {cfg['id']} report country/entity"),
-                        dcc.Dropdown(id=f"{prefix}-report-country", options=entity_opts, value=p["entities"][0] if p["entities"] else None, clearable=False),
+                        dcc.Dropdown(id=f"{prefix}-report-country", options=entity_opts,
+                                     value=p["entities"][0] if p["entities"] else None, clearable=False),
                     ], md=6),
                 ], className="mb-3"),
                 html.Div(id=f"{prefix}-report-output"),
                 html.Div(id=f"{prefix}-report-download-text", style={"display": "none"}),
-                dbc.Button(f"Download {cfg['id']} country-period evidence highlights report", id=f"{prefix}-download-report-btn", color="secondary", className="mt-3"),
+                dbc.Button(f"Download {cfg['id']} country-period evidence highlights report",
+                           id=f"{prefix}-download-report-btn", color="secondary", className="mt-3"),
                 dcc.Download(id=f"{prefix}-download-report"),
             ])
+            return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "explorer":
             evidence_countries = p["entities"]
             evidence_periods = p["periods"]
-            return html.Div([
+            section_content = html.Div([
                 html.H4(f"🔎 {cfg['id']} Evidence Explorer — {cfg['short_name']}"),
                 dbc.Row([
                     dbc.Col([
@@ -1361,21 +1447,28 @@ def make_indicator_callbacks(cfg):
                     ], md=3),
                     dbc.Col([
                         html.Label(f"{cfg['id']} evidence country/entity"),
-                        dcc.Dropdown(id=f"{prefix}-explorer-country", options=[{"label": x, "value": x} for x in evidence_countries], value=evidence_countries[0] if evidence_countries else None, clearable=False),
+                        dcc.Dropdown(id=f"{prefix}-explorer-country",
+                                     options=[{"label": x, "value": x} for x in evidence_countries],
+                                     value=evidence_countries[0] if evidence_countries else None, clearable=False),
                     ], md=3),
                     dbc.Col([
                         html.Label(f"{cfg['id']} evidence period"),
-                        dcc.Dropdown(id=f"{prefix}-explorer-period", options=[{"label": x, "value": x} for x in evidence_periods], value=evidence_periods[0] if evidence_periods else None, clearable=False),
+                        dcc.Dropdown(id=f"{prefix}-explorer-period",
+                                     options=[{"label": x, "value": x} for x in evidence_periods],
+                                     value=evidence_periods[0] if evidence_periods else None, clearable=False),
                     ], md=3),
                     dbc.Col([
                         html.Label("Keyword search"),
-                        dcc.Input(id=f"{prefix}-explorer-keyword", value="", type="text", debounce=True, className="form-control"),
+                        dcc.Input(id=f"{prefix}-explorer-keyword", value="", type="text", debounce=True,
+                                  className="form-control"),
                     ], md=3),
                 ], className="mb-3"),
                 html.Div(id=f"{prefix}-explorer-output"),
-                dbc.Button(f"Download filtered {cfg['id']} evidence CSV", id=f"{prefix}-download-csv-btn", color="secondary", className="mt-3"),
+                dbc.Button(f"Download filtered {cfg['id']} evidence CSV", id=f"{prefix}-download-csv-btn",
+                           color="secondary", className="mt-3"),
                 dcc.Download(id=f"{prefix}-download-csv"),
             ])
+            return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         return dbc.Alert("Unknown section.", color="warning")
 
@@ -1388,7 +1481,8 @@ def make_indicator_callbacks(cfg):
         p = PREPARED[cfg["id"]]
         gp = p["general_period"]
         if gp.empty or not period:
-            return dbc.Alert("No general country/institution evidence summary could be built from the available files.", color="warning")
+            return dbc.Alert("No general country/institution evidence summary could be built from the available files.",
+                             color="warning")
         dfp = gp[gp["TimeWindow"].astype(str).str.strip() == str(period).strip()].copy()
         if dfp.empty:
             return dbc.Alert(f"No general evidence data for {period}.", color="warning")
@@ -1400,9 +1494,12 @@ def make_indicator_callbacks(cfg):
             "best_evidence_link", "best_evidence_type", "best_evidence_action_stage",
             "best_evidence_level", "best_evidence_justification", "best_evidence_phrases",
         ] if c in dfp.columns])
-        table_df = dfp[display_cols].sort_values("general_score", ascending=False) if "general_score" in dfp.columns else dfp[display_cols]
+        table_df = dfp[display_cols].sort_values("general_score",
+                                                 ascending=False) if "general_score" in dfp.columns else dfp[
+            display_cols]
         return html.Div([
-            dcc.Graph(figure=score_map_fig(dfp, "general_score", f"{cfg['id']} general evidence score — {period}", "Viridis")),
+            dcc.Graph(figure=score_map_fig(dfp, "general_score", f"{cfg['id']} general evidence score — {period}",
+                                           "Viridis")),
             html.H5("Country/institution evidence table"),
             data_table(table_df, page_size=15),
         ])
@@ -1426,9 +1523,12 @@ def make_indicator_callbacks(cfg):
             "best_evidence_link", "best_evidence_type", "best_evidence_action_stage",
             "best_evidence_level", "best_evidence_phrases", "best_evidence_unep_justification",
         ] if c in dfu.columns])
-        table_df = dfu[display_cols].sort_values("unep_score_for_app", ascending=False) if "unep_score_for_app" in dfu.columns else dfu[display_cols]
+        table_df = dfu[display_cols].sort_values("unep_score_for_app",
+                                                 ascending=False) if "unep_score_for_app" in dfu.columns else dfu[
+            display_cols]
         return html.Div([
-            dcc.Graph(figure=score_map_fig(dfu, "unep_score_for_app", f"{cfg['id']} UNEP-attributed evidence score — {period}", "YlGn")),
+            dcc.Graph(figure=score_map_fig(dfu, "unep_score_for_app",
+                                           f"{cfg['id']} UNEP-attributed evidence score — {period}", "YlGn")),
             html.H5("UNEP-attributed evidence table"),
             data_table(table_df, page_size=15),
         ])
@@ -1453,14 +1553,14 @@ def make_indicator_callbacks(cfg):
             general_data = gp[
                 (gp["Entity"].astype(str).str.strip() == str(country).strip())
                 & (gp["TimeWindow"].astype(str).str.strip() == str(period).strip())
-            ].copy()
+                ].copy()
 
         unep_data = pd.DataFrame()
         if not up.empty and {"Entity", "TimeWindow"}.issubset(up.columns):
             unep_data = up[
                 (up["Entity"].astype(str).str.strip() == str(country).strip())
                 & (up["TimeWindow"].astype(str).str.strip() == str(period).strip())
-            ].copy()
+                ].copy()
 
         general_docs = filter_general_docs(cfg, p["country_docs_for_general"], country, period)
         unep_docs = filter_unep_docs(cfg, p["docs"], country, period)
@@ -1470,42 +1570,52 @@ def make_indicator_callbacks(cfg):
 
         general_card_children = [html.H5(f"General {cfg['short_name']} evidence")]
         if general_data.empty:
-            general_card_children.append(dbc.Alert("No general indicator evidence found for this country-period.", color="light"))
+            general_card_children.append(
+                dbc.Alert("No general indicator evidence found for this country-period.", color="light"))
         else:
             r = general_data.iloc[0]
             general_card_children.extend([
                 html.H3(str(safe_get(r, "general_score", 0))),
                 html.P([html.B("Evidence documents: "), str(safe_get(r, "count_general_evidence_docs", 0))]),
                 html.P([html.B("Best evidence title: "), str(safe_get(r, "best_evidence_title", "N/A"))]),
-                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")), target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
+                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")),
+                       target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
                 html.Details([
                     html.Summary("Evidence justification"),
                     html.Div(str(safe_get(r, "best_evidence_justification", "No justification available.")))
                 ]),
                 html.Details([
                     html.Summary("Evidence phrases"),
-                    html.Ul([html.Li(str(x)) for x in parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div("No evidence phrases available.")
+                    html.Ul([html.Li(str(x)) for x in
+                             parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div(
+                        "No evidence phrases available.")
                 ]),
             ])
 
         unep_card_children = [html.H5(f"UNEP-attributed {cfg['short_name']} evidence")]
         if unep_data.empty:
-            unep_card_children.append(dbc.Alert("No UNEP-attributed evidence found for this country-period.", color="light"))
+            unep_card_children.append(
+                dbc.Alert("No UNEP-attributed evidence found for this country-period.", color="light"))
         else:
             r = unep_data.iloc[0]
             unep_card_children.extend([
                 html.H3(str(safe_get(r, "unep_score_for_app", 0))),
                 html.P([html.B("Evidence level: "), str(safe_get(r, "unep_extent_for_app", "N/A"))]),
-                html.P([html.B("Attributable evidence documents: "), str(safe_get(r, "count_attributable_docs_nonzero_unep", 0))]),
+                html.P([html.B("Attributable evidence documents: "),
+                        str(safe_get(r, "count_attributable_docs_nonzero_unep", 0))]),
                 html.P([html.B("Best evidence title: "), str(safe_get(r, "best_evidence_title", "N/A"))]),
-                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")), target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
+                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")),
+                       target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
                 html.Details([
                     html.Summary("UNEP attribution justification"),
-                    html.Div(str(safe_get(r, "best_evidence_unep_justification", "No UNEP attribution justification available.")))
+                    html.Div(str(safe_get(r, "best_evidence_unep_justification",
+                                          "No UNEP attribution justification available.")))
                 ]),
                 html.Details([
                     html.Summary("Evidence phrases"),
-                    html.Ul([html.Li(str(x)) for x in parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div("No evidence phrases available.")
+                    html.Ul([html.Li(str(x)) for x in
+                             parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div(
+                        "No evidence phrases available.")
                 ]),
             ])
 
@@ -1563,7 +1673,8 @@ def make_indicator_callbacks(cfg):
         report_text = prepare_download_text(report_lines)
 
         general_cols = unique_cols([c for c in [
-            "Entity", "TimeWindow", "Title", "Link", first_existing_col(general_docs, cfg["general_score_candidates"]) if not general_docs.empty else None,
+            "Entity", "TimeWindow", "Title", "Link",
+            first_existing_col(general_docs, cfg["general_score_candidates"]) if not general_docs.empty else None,
             "sd", "unep_attribution_score", "attributable_relevant_doc",
             "instrument_type", "action_stage", "evidence_level",
             *cfg["justification_candidates"], "unep_justification", "evidence_phrases",
@@ -1613,7 +1724,8 @@ def make_indicator_callbacks(cfg):
     def download_report(n_clicks, text, country, period):
         if not n_clicks or not text:
             return no_update
-        filename = f"{cfg['id']}_{country}_{period}_evidence_highlights.md".replace(" ", "_").replace("/", "_").replace(".", "_")
+        filename = f"{cfg['id']}_{country}_{period}_evidence_highlights.md".replace(" ", "_").replace("/", "_").replace(
+            ".", "_")
         return dict(content=text, filename=filename, type="text/markdown")
 
     @app.callback(
@@ -1631,7 +1743,8 @@ def make_indicator_callbacks(cfg):
             score_col = first_existing_col(evidence_df, cfg["general_score_candidates"])
         else:
             evidence_df = p["docs"].copy()
-            score_col = "sd" if "sd" in evidence_df.columns else first_existing_col(evidence_df, cfg["unep_score_candidates"])
+            score_col = "sd" if "sd" in evidence_df.columns else first_existing_col(evidence_df,
+                                                                                    cfg["unep_score_candidates"])
 
         if evidence_df.empty:
             return dbc.Alert("Selected evidence dataset is empty.", color="warning")
@@ -1707,7 +1820,8 @@ def make_indicator_callbacks(cfg):
         df = FILTERED_CACHE.get(f"{prefix}-explorer", pd.DataFrame())
         if df.empty:
             return no_update
-        return dcc.send_data_frame(df.to_csv, f"{cfg['id']}_filtered_evidence.csv".replace(".", "_"), index=False, encoding="utf-8-sig")
+        return dcc.send_data_frame(df.to_csv, f"{cfg['id']}_filtered_evidence.csv".replace(".", "_"), index=False,
+                                   encoding="utf-8-sig")
 
 
 FILTERED_CACHE = {}
@@ -1788,11 +1902,13 @@ def render_sp42(tab):
             dbc.Row([
                 dbc.Col([
                     html.Label("Select Indicator 4.2 period"),
-                    dcc.Dropdown(id="sp42-report-period", options=[{"label": p, "value": p} for p in periods], value=periods[0] if periods else None, clearable=False),
+                    dcc.Dropdown(id="sp42-report-period", options=[{"label": p, "value": p} for p in periods],
+                                 value=periods[0] if periods else None, clearable=False),
                 ], md=6),
                 dbc.Col([
                     html.Label("Select Indicator 4.2 country/territory"),
-                    dcc.Dropdown(id="sp42-report-country", options=[{"label": c, "value": c} for c in countries], value=countries[0] if countries else None, clearable=False),
+                    dcc.Dropdown(id="sp42-report-country", options=[{"label": c, "value": c} for c in countries],
+                                 value=countries[0] if countries else None, clearable=False),
                 ], md=6),
             ], className="mb-3"),
             html.Div(id="sp42-report-output"),
@@ -1817,7 +1933,7 @@ def update_sp42_report(period, country):
     df = valid[
         (valid["TimeWindow_42"].astype(str) == str(period))
         & (valid["Entity_42"].astype(str) == str(country))
-    ].copy()
+        ].copy()
 
     if df.empty:
         return dbc.Alert(f"No Indicator 4.2 candidate evidence found for {country} — {period}.", color="light")
@@ -1833,7 +1949,8 @@ def update_sp42_report(period, country):
         dbc.Row([
             dbc.Col(metric_card("Candidate documents", len(df)), md=4),
             dbc.Col(metric_card("Institutions represented", df["User_entity_42"].nunique()), md=4),
-            dbc.Col(metric_card("Document types", df["Document type"].nunique() if "Document type" in df.columns else "N/A"), md=4),
+            dbc.Col(metric_card("Document types",
+                                df["Document type"].nunique() if "Document type" in df.columns else "N/A"), md=4),
         ], className="g-3 mb-3"),
         data_table(df[display_cols], page_size=15),
     ])
@@ -1916,7 +2033,6 @@ app.index_string = """
     </body>
 </html>
 """
-
 
 # ============================================================
 # RUN
