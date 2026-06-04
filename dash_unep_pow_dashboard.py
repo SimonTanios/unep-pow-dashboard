@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import ast
 import html as html_lib
@@ -8,11 +9,15 @@ import plotly.express as px
 from dash import Dash, dcc, html, dash_table, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 
+from dotenv import load_dotenv
+load_dotenv(Path(".env"))
+
 # ============================================================
 # DATA PATHS
 # ============================================================
 
 DATA_DIR = Path("data")
+
 
 # ============================================================
 # INDICATOR CONFIGURATION
@@ -33,8 +38,7 @@ INDICATORS = [
         "relevant_col_candidates": ["climate_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
-        "evidence_flag_candidates": ["evidence_of_unep_attributed_sp1_2_policy_adoption",
-                                     "evidence_of_unep_attributed_sp1_2_policy_standard_action"],
+        "evidence_flag_candidates": ["evidence_of_unep_attributed_sp1_2_policy_adoption", "evidence_of_unep_attributed_sp1_2_policy_standard_action"],
         "extent_candidates": ["extent_of_unep_attributed_sp1_2_evidence"],
         "justification_candidates": ["climate_justification", "best_evidence_climate_justification"],
         "instrument_candidates": ["instrument_type", "best_evidence_instrument_type"],
@@ -72,20 +76,18 @@ INDICATORS = [
         "indicator_file": DATA_DIR / "sp3_1_chemicals_pollution_indicator_summary.csv",
         "docs_file": DATA_DIR / "sp3_1_chemicals_pollution_doc_level_deduped.csv",
         "main_score_candidates": ["SP3_1_Ci_t_UNEP", "Ci_t_UNEP"],
-        "general_score_candidates": ["policy_regulation_score", "chemicals_policy_score", "pollution_policy_score",
-                                     "policy_score"],
+        "general_score_candidates": ["policy_regulation_score", "chemicals_policy_score", "pollution_policy_score", "policy_score"],
         "relevant_col_candidates": ["chemicals_relevant", "pollution_relevant", "policy_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
         "evidence_flag_candidates": [
-            "evidence_of_unep_attributed_sp3_1_policy_regulatory_action",
-            "evidence_of_unep_attributed_sp3_1_policy_law_regulation",
-            "evidence_of_unep_attributed_sp3_1_policy_action",
-            "evidence_of_unep_attributed_sp3_1_evidence",
+           "evidence_of_unep_attributed_sp3_1_policy_regulatory_action",
+           "evidence_of_unep_attributed_sp3_1_policy_law_regulation",
+           "evidence_of_unep_attributed_sp3_1_policy_action",
+           "evidence_of_unep_attributed_sp3_1_evidence",
         ],
         "extent_candidates": ["extent_of_unep_attributed_sp3_1_evidence"],
-        "justification_candidates": ["chemicals_justification", "pollution_justification", "policy_justification",
-                                     "best_evidence_chemicals_justification"],
+        "justification_candidates": ["chemicals_justification", "pollution_justification", "policy_justification", "best_evidence_chemicals_justification"],
         "instrument_candidates": ["instrument_type", "best_evidence_instrument_type"],
         "general_metric_label": "Chemicals/pollution policy evidence score",
         "unep_metric_label": "UNEP-attributed chemicals/pollution evidence score",
@@ -127,8 +129,7 @@ INDICATORS = [
         "indicator_file": DATA_DIR / "sp5_1_env_law_indicator_summary.csv",
         "docs_file": DATA_DIR / "sp5_1_env_law_doc_level_deduped.csv",
         "main_score_candidates": ["SP5_1_Ci_t_UNEP", "Ci_t_UNEP"],
-        "general_score_candidates": ["env_law_score", "environmental_law_score", "law_governance_score",
-                                     "policy_support_score"],
+        "general_score_candidates": ["env_law_score", "environmental_law_score", "law_governance_score", "policy_support_score"],
         "relevant_col_candidates": ["env_law_relevant", "environmental_law_relevant", "law_governance_relevant"],
         "unep_flag_candidates": ["unep_attributed", "attributable_relevant_doc"],
         "unep_score_candidates": ["unep_attribution_score"],
@@ -139,10 +140,10 @@ INDICATORS = [
         ],
         "extent_candidates": ["extent_of_unep_attributed_sp5_1_evidence"],
         "justification_candidates": [
-            "law_justification",
-            "best_evidence_law_justification",
-            "env_law_justification",
-            "environmental_law_justification",
+           "law_justification",
+           "best_evidence_law_justification",
+           "env_law_justification",
+           "environmental_law_justification",
             "law_governance_justification",
             "best_evidence_env_law_justification",
         ],
@@ -418,7 +419,6 @@ def data_table(df, page_size=10, style_extra=None):
         ]
     )
 
-
 def metric_card(title, value, subtitle=None):
     return dbc.Card(
         dbc.CardBody([
@@ -428,7 +428,6 @@ def metric_card(title, value, subtitle=None):
         ]),
         className="metric-card h-100",
     )
-
 
 def sp71_warning_wrapper(content):
     """
@@ -458,7 +457,6 @@ def sp71_warning_wrapper(content):
             ),
         ]
     )
-
 
 # ============================================================
 # DATA PREPARATION
@@ -573,12 +571,10 @@ def normalize_general_period(config, bundle, docs_df):
         general_period = clean_timewindow(bundle["country_period"].copy())
 
         if "Ci_t_country_capacity" in general_period.columns:
-            general_period["general_score"] = pd.to_numeric(general_period["Ci_t_country_capacity"],
-                                                            errors="coerce").fillna(0)
+            general_period["general_score"] = pd.to_numeric(general_period["Ci_t_country_capacity"], errors="coerce").fillna(0)
         elif "general_score" not in general_period.columns:
             score_col = first_existing_col(general_period, config["general_score_candidates"])
-            general_period["general_score"] = pd.to_numeric(general_period[score_col], errors="coerce").fillna(
-                0) if score_col else 0
+            general_period["general_score"] = pd.to_numeric(general_period[score_col], errors="coerce").fillna(0) if score_col else 0
 
         if "count_capacity_evidence_docs" in general_period.columns:
             general_period["count_general_evidence_docs"] = general_period["count_capacity_evidence_docs"]
@@ -630,7 +626,7 @@ def filter_general_docs(config, docs, country, period):
     df = df[
         (df["Entity"].astype(str).str.strip() == str(country).strip())
         & (df["TimeWindow"].astype(str).str.strip() == str(period).strip())
-        ].copy()
+    ].copy()
 
     if df.empty:
         return df
@@ -659,7 +655,7 @@ def filter_unep_docs(config, docs, country, period):
     df = df[
         (df["Entity"].astype(str).str.strip() == str(country).strip())
         & (df["TimeWindow"].astype(str).str.strip() == str(period).strip())
-        ].copy()
+    ].copy()
 
     if df.empty:
         return df
@@ -817,8 +813,7 @@ def build_indicator_summary_df():
             if not df.empty and "TimeWindow" in df.columns:
                 all_periods.update(df["TimeWindow"].dropna().astype(str).unique())
 
-        unep_country_periods = int(period_df[
-                                       "unep_evidence_flag_for_app"].sum()) if not period_df.empty and "unep_evidence_flag_for_app" in period_df.columns else 0
+        unep_country_periods = int(period_df["unep_evidence_flag_for_app"].sum()) if not period_df.empty and "unep_evidence_flag_for_app" in period_df.columns else 0
 
         rows.append({
             "Subprogramme": cfg["subprogramme"],
@@ -969,9 +964,7 @@ def score_map_fig(df, value_col, title, color_scale="Viridis"):
         locationmode="country names",
         color=value_col,
         hover_name="Entity",
-        hover_data=[c for c in
-                    ["TimeWindow", value_col, "count_general_evidence_docs", "count_attributable_docs_nonzero_unep",
-                     "best_evidence_title"] if c in df.columns],
+        hover_data=[c for c in ["TimeWindow", value_col, "count_general_evidence_docs", "count_attributable_docs_nonzero_unep", "best_evidence_title"] if c in df.columns],
         color_continuous_scale=color_scale,
         range_color=[0, 100],
         title=title,
@@ -1035,8 +1028,7 @@ The dashboard separates:
             dbc.Col(metric_card("Indicators covered", len(INDICATORS) + 1), md=6),
         ], className="g-3 mb-3"),
         dbc.Accordion([
-            dbc.AccordionItem(data_table(scope_table, page_size=20),
-                              title="Show prototype country/entity scope by indicator")
+            dbc.AccordionItem(data_table(scope_table, page_size=20), title="Show prototype country/entity scope by indicator")
         ], start_collapsed=True, className="mb-4"),
         html.H3("Prototype indicator values based on the current analysis"),
 
@@ -1113,9 +1105,7 @@ The dashboard separates:
         data_table(summary_df, page_size=20),
         html.Hr(),
         html.H3("Summary by indicator"),
-        html.P(
-            "Note: the charts show country-period counts across all loaded periods, while the Prototype value table above shows the latest available period only.",
-            className="text-muted"),
+        html.P("Note: the charts show country-period counts across all loaded periods, while the Prototype value table above shows the latest available period only.", className="text-muted"),
         dbc.Row([
             dbc.Col(dcc.Graph(figure=fig_general), md=6),
             dbc.Col(dcc.Graph(figure=fig_unep), md=6),
@@ -1246,8 +1236,7 @@ def indicator_layout(cfg):
 
 def overton_42_layout():
     if overton_42.empty:
-        return dbc.Alert("No Indicator 4.2 data found. Please add data/overton_42_government_unep_candidates.csv",
-                         color="warning")
+        return dbc.Alert("No Indicator 4.2 data found. Please add data/overton_42_government_unep_candidates.csv", color="warning")
 
     valid = overton_42[
         ~overton_42["TimeWindow_42"].astype(str).isin(["Outside dashboard periods", "Unknown", "nan", "None", ""])
@@ -1310,6 +1299,7 @@ app.layout = dbc.Container(
                 dcc.Tab(label="Methodology", value="Methodology"),
                 *[dcc.Tab(label=cfg["tab_title"], value=cfg["id"]) for cfg in INDICATORS],
                 dcc.Tab(label="SP4.2 Knowledge Use", value="SP4.2"),
+                dcc.Tab(label="🔐 IPMR Linkage", value="IPMR Linkage"),
             ],
         ),
 
@@ -1330,6 +1320,8 @@ def render_top_tab(tab):
         return methodology_layout()
     if tab == "SP4.2":
         return overton_42_layout()
+    if tab == "IPMR Linkage":
+        return ipmr_gate_layout()
 
     cfg = next((c for c in INDICATORS if c["id"] == tab), None)
     if cfg:
@@ -1356,8 +1348,7 @@ def make_indicator_callbacks(cfg):
         is_sp71 = cfg["id"] == "SP7.1"
 
         if not p["entities"] and not p["periods"]:
-            return dbc.Alert("No data found for this indicator. Please add the expected CSV files to the data/ folder.",
-                             color="warning")
+            return dbc.Alert("No data found for this indicator. Please add the expected CSV files to the data/ folder.", color="warning")
 
         if section == "map":
             section_content = html.Div([
@@ -1369,9 +1360,7 @@ def make_indicator_callbacks(cfg):
             return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "general":
-            opts = [{"label": x, "value": x} for x in
-                    sorted(p["general_period"]["TimeWindow"].dropna().astype(str).unique())] if not p[
-                "general_period"].empty and "TimeWindow" in p["general_period"].columns else []
+            opts = [{"label": x, "value": x} for x in sorted(p["general_period"]["TimeWindow"].dropna().astype(str).unique())] if not p["general_period"].empty and "TimeWindow" in p["general_period"].columns else []
             default = opts[0]["value"] if opts else None
             section_content = html.Div([
                 html.H4(f"📊 {cfg['id']} Country/Institution Evidence — {cfg['short_name']}"),
@@ -1386,9 +1375,7 @@ def make_indicator_callbacks(cfg):
             return sp71_warning_wrapper(section_content) if is_sp71 else section_content
 
         if section == "unep":
-            opts = [{"label": x, "value": x} for x in
-                    sorted(p["period"]["TimeWindow"].dropna().astype(str).unique())] if not p[
-                "period"].empty and "TimeWindow" in p["period"].columns else []
+            opts = [{"label": x, "value": x} for x in sorted(p["period"]["TimeWindow"].dropna().astype(str).unique())] if not p["period"].empty and "TimeWindow" in p["period"].columns else []
             default = opts[0]["value"] if opts else None
             section_content = html.Div([
                 html.H4(f"🌱 {cfg['id']} UNEP-attributed Evidence — {cfg['short_name']}"),
@@ -1481,8 +1468,7 @@ def make_indicator_callbacks(cfg):
         p = PREPARED[cfg["id"]]
         gp = p["general_period"]
         if gp.empty or not period:
-            return dbc.Alert("No general country/institution evidence summary could be built from the available files.",
-                             color="warning")
+            return dbc.Alert("No general country/institution evidence summary could be built from the available files.", color="warning")
         dfp = gp[gp["TimeWindow"].astype(str).str.strip() == str(period).strip()].copy()
         if dfp.empty:
             return dbc.Alert(f"No general evidence data for {period}.", color="warning")
@@ -1494,12 +1480,9 @@ def make_indicator_callbacks(cfg):
             "best_evidence_link", "best_evidence_type", "best_evidence_action_stage",
             "best_evidence_level", "best_evidence_justification", "best_evidence_phrases",
         ] if c in dfp.columns])
-        table_df = dfp[display_cols].sort_values("general_score",
-                                                 ascending=False) if "general_score" in dfp.columns else dfp[
-            display_cols]
+        table_df = dfp[display_cols].sort_values("general_score", ascending=False) if "general_score" in dfp.columns else dfp[display_cols]
         return html.Div([
-            dcc.Graph(figure=score_map_fig(dfp, "general_score", f"{cfg['id']} general evidence score — {period}",
-                                           "Viridis")),
+            dcc.Graph(figure=score_map_fig(dfp, "general_score", f"{cfg['id']} general evidence score — {period}", "Viridis")),
             html.H5("Country/institution evidence table"),
             data_table(table_df, page_size=15),
         ])
@@ -1523,12 +1506,9 @@ def make_indicator_callbacks(cfg):
             "best_evidence_link", "best_evidence_type", "best_evidence_action_stage",
             "best_evidence_level", "best_evidence_phrases", "best_evidence_unep_justification",
         ] if c in dfu.columns])
-        table_df = dfu[display_cols].sort_values("unep_score_for_app",
-                                                 ascending=False) if "unep_score_for_app" in dfu.columns else dfu[
-            display_cols]
+        table_df = dfu[display_cols].sort_values("unep_score_for_app", ascending=False) if "unep_score_for_app" in dfu.columns else dfu[display_cols]
         return html.Div([
-            dcc.Graph(figure=score_map_fig(dfu, "unep_score_for_app",
-                                           f"{cfg['id']} UNEP-attributed evidence score — {period}", "YlGn")),
+            dcc.Graph(figure=score_map_fig(dfu, "unep_score_for_app", f"{cfg['id']} UNEP-attributed evidence score — {period}", "YlGn")),
             html.H5("UNEP-attributed evidence table"),
             data_table(table_df, page_size=15),
         ])
@@ -1553,14 +1533,14 @@ def make_indicator_callbacks(cfg):
             general_data = gp[
                 (gp["Entity"].astype(str).str.strip() == str(country).strip())
                 & (gp["TimeWindow"].astype(str).str.strip() == str(period).strip())
-                ].copy()
+            ].copy()
 
         unep_data = pd.DataFrame()
         if not up.empty and {"Entity", "TimeWindow"}.issubset(up.columns):
             unep_data = up[
                 (up["Entity"].astype(str).str.strip() == str(country).strip())
                 & (up["TimeWindow"].astype(str).str.strip() == str(period).strip())
-                ].copy()
+            ].copy()
 
         general_docs = filter_general_docs(cfg, p["country_docs_for_general"], country, period)
         unep_docs = filter_unep_docs(cfg, p["docs"], country, period)
@@ -1570,52 +1550,42 @@ def make_indicator_callbacks(cfg):
 
         general_card_children = [html.H5(f"General {cfg['short_name']} evidence")]
         if general_data.empty:
-            general_card_children.append(
-                dbc.Alert("No general indicator evidence found for this country-period.", color="light"))
+            general_card_children.append(dbc.Alert("No general indicator evidence found for this country-period.", color="light"))
         else:
             r = general_data.iloc[0]
             general_card_children.extend([
                 html.H3(str(safe_get(r, "general_score", 0))),
                 html.P([html.B("Evidence documents: "), str(safe_get(r, "count_general_evidence_docs", 0))]),
                 html.P([html.B("Best evidence title: "), str(safe_get(r, "best_evidence_title", "N/A"))]),
-                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")),
-                       target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
+                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")), target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
                 html.Details([
                     html.Summary("Evidence justification"),
                     html.Div(str(safe_get(r, "best_evidence_justification", "No justification available.")))
                 ]),
                 html.Details([
                     html.Summary("Evidence phrases"),
-                    html.Ul([html.Li(str(x)) for x in
-                             parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div(
-                        "No evidence phrases available.")
+                    html.Ul([html.Li(str(x)) for x in parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div("No evidence phrases available.")
                 ]),
             ])
 
         unep_card_children = [html.H5(f"UNEP-attributed {cfg['short_name']} evidence")]
         if unep_data.empty:
-            unep_card_children.append(
-                dbc.Alert("No UNEP-attributed evidence found for this country-period.", color="light"))
+            unep_card_children.append(dbc.Alert("No UNEP-attributed evidence found for this country-period.", color="light"))
         else:
             r = unep_data.iloc[0]
             unep_card_children.extend([
                 html.H3(str(safe_get(r, "unep_score_for_app", 0))),
                 html.P([html.B("Evidence level: "), str(safe_get(r, "unep_extent_for_app", "N/A"))]),
-                html.P([html.B("Attributable evidence documents: "),
-                        str(safe_get(r, "count_attributable_docs_nonzero_unep", 0))]),
+                html.P([html.B("Attributable evidence documents: "), str(safe_get(r, "count_attributable_docs_nonzero_unep", 0))]),
                 html.P([html.B("Best evidence title: "), str(safe_get(r, "best_evidence_title", "N/A"))]),
-                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")),
-                       target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
+                html.A("Open best evidence link", href=str(safe_get(r, "best_evidence_link", "")), target="_blank") if safe_get(r, "best_evidence_link", "") else html.Span(),
                 html.Details([
                     html.Summary("UNEP attribution justification"),
-                    html.Div(str(safe_get(r, "best_evidence_unep_justification",
-                                          "No UNEP attribution justification available.")))
+                    html.Div(str(safe_get(r, "best_evidence_unep_justification", "No UNEP attribution justification available.")))
                 ]),
                 html.Details([
                     html.Summary("Evidence phrases"),
-                    html.Ul([html.Li(str(x)) for x in
-                             parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div(
-                        "No evidence phrases available.")
+                    html.Ul([html.Li(str(x)) for x in parse_evidence_phrases(safe_get(r, "best_evidence_phrases", "[]"))]) or html.Div("No evidence phrases available.")
                 ]),
             ])
 
@@ -1673,8 +1643,7 @@ def make_indicator_callbacks(cfg):
         report_text = prepare_download_text(report_lines)
 
         general_cols = unique_cols([c for c in [
-            "Entity", "TimeWindow", "Title", "Link",
-            first_existing_col(general_docs, cfg["general_score_candidates"]) if not general_docs.empty else None,
+            "Entity", "TimeWindow", "Title", "Link", first_existing_col(general_docs, cfg["general_score_candidates"]) if not general_docs.empty else None,
             "sd", "unep_attribution_score", "attributable_relevant_doc",
             "instrument_type", "action_stage", "evidence_level",
             *cfg["justification_candidates"], "unep_justification", "evidence_phrases",
@@ -1724,8 +1693,7 @@ def make_indicator_callbacks(cfg):
     def download_report(n_clicks, text, country, period):
         if not n_clicks or not text:
             return no_update
-        filename = f"{cfg['id']}_{country}_{period}_evidence_highlights.md".replace(" ", "_").replace("/", "_").replace(
-            ".", "_")
+        filename = f"{cfg['id']}_{country}_{period}_evidence_highlights.md".replace(" ", "_").replace("/", "_").replace(".", "_")
         return dict(content=text, filename=filename, type="text/markdown")
 
     @app.callback(
@@ -1743,8 +1711,7 @@ def make_indicator_callbacks(cfg):
             score_col = first_existing_col(evidence_df, cfg["general_score_candidates"])
         else:
             evidence_df = p["docs"].copy()
-            score_col = "sd" if "sd" in evidence_df.columns else first_existing_col(evidence_df,
-                                                                                    cfg["unep_score_candidates"])
+            score_col = "sd" if "sd" in evidence_df.columns else first_existing_col(evidence_df, cfg["unep_score_candidates"])
 
         if evidence_df.empty:
             return dbc.Alert("Selected evidence dataset is empty.", color="warning")
@@ -1820,8 +1787,7 @@ def make_indicator_callbacks(cfg):
         df = FILTERED_CACHE.get(f"{prefix}-explorer", pd.DataFrame())
         if df.empty:
             return no_update
-        return dcc.send_data_frame(df.to_csv, f"{cfg['id']}_filtered_evidence.csv".replace(".", "_"), index=False,
-                                   encoding="utf-8-sig")
+        return dcc.send_data_frame(df.to_csv, f"{cfg['id']}_filtered_evidence.csv".replace(".", "_"), index=False, encoding="utf-8-sig")
 
 
 FILTERED_CACHE = {}
@@ -1902,13 +1868,11 @@ def render_sp42(tab):
             dbc.Row([
                 dbc.Col([
                     html.Label("Select Indicator 4.2 period"),
-                    dcc.Dropdown(id="sp42-report-period", options=[{"label": p, "value": p} for p in periods],
-                                 value=periods[0] if periods else None, clearable=False),
+                    dcc.Dropdown(id="sp42-report-period", options=[{"label": p, "value": p} for p in periods], value=periods[0] if periods else None, clearable=False),
                 ], md=6),
                 dbc.Col([
                     html.Label("Select Indicator 4.2 country/territory"),
-                    dcc.Dropdown(id="sp42-report-country", options=[{"label": c, "value": c} for c in countries],
-                                 value=countries[0] if countries else None, clearable=False),
+                    dcc.Dropdown(id="sp42-report-country", options=[{"label": c, "value": c} for c in countries], value=countries[0] if countries else None, clearable=False),
                 ], md=6),
             ], className="mb-3"),
             html.Div(id="sp42-report-output"),
@@ -1933,7 +1897,7 @@ def update_sp42_report(period, country):
     df = valid[
         (valid["TimeWindow_42"].astype(str) == str(period))
         & (valid["Entity_42"].astype(str) == str(country))
-        ].copy()
+    ].copy()
 
     if df.empty:
         return dbc.Alert(f"No Indicator 4.2 candidate evidence found for {country} — {period}.", color="light")
@@ -1949,8 +1913,7 @@ def update_sp42_report(period, country):
         dbc.Row([
             dbc.Col(metric_card("Candidate documents", len(df)), md=4),
             dbc.Col(metric_card("Institutions represented", df["User_entity_42"].nunique()), md=4),
-            dbc.Col(metric_card("Document types",
-                                df["Document type"].nunique() if "Document type" in df.columns else "N/A"), md=4),
+            dbc.Col(metric_card("Document types", df["Document type"].nunique() if "Document type" in df.columns else "N/A"), md=4),
         ], className="g-3 mb-3"),
         data_table(df[display_cols], page_size=15),
     ])
@@ -2033,6 +1996,1329 @@ app.index_string = """
     </body>
 </html>
 """
+# ============================================================
+# IPMR LINKAGE SECTION — PROTECTED INTERNAL SECTION
+# ============================================================
+
+import os
+import json
+import plotly.graph_objects as go
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
+
+IPMR_LINKAGE_DIR = DATA_DIR / "ipmr_linkage"
+
+IPMR_CANDIDATE_LINKS_FILE = IPMR_LINKAGE_DIR / "external_ipmr_project_candidate_links_v3.csv"
+IPMR_BEST_LINKS_FILE = IPMR_LINKAGE_DIR / "external_ipmr_project_best_candidate_per_document_v3.csv"
+IPMR_EXTERNAL_FEATURES_FILE = IPMR_LINKAGE_DIR / "external_ai_features.csv"
+IPMR_PROJECT_FEATURES_FILE = IPMR_LINKAGE_DIR / "ipmr_project_ai_features.csv"
+IPMR_FRAMEWORK_FILE = IPMR_LINKAGE_DIR / "ipmr_framework_elements_flattened_raw.csv"
+
+
+def ipmr_get_passcode():
+    """
+    Local testing:
+    Put this in your local .env file:
+    IPMR_SECTION_PASSCODE=ipmr-review-2026
+
+    Render:
+    Add IPMR_SECTION_PASSCODE as an Environment Variable.
+
+    Do not hardcode the real passcode in the code if the GitHub repo is public.
+    """
+    return os.getenv("IPMR_SECTION_PASSCODE", "").strip()
+
+
+def ipmr_load_csv(path):
+    if path and Path(path).exists():
+        try:
+            return pd.read_csv(path, encoding="utf-8-sig")
+        except Exception:
+            return pd.read_csv(path)
+    return pd.DataFrame()
+
+
+def ipmr_clean_df(df):
+    if df is None or df.empty:
+        return pd.DataFrame()
+
+    df = df.copy()
+    df.columns = [str(c).strip() for c in df.columns]
+
+    for col in df.columns:
+        df[col] = df[col].apply(lambda x: "" if pd.isna(x) else x)
+
+    if "final_candidate_link_score" in df.columns:
+        df["final_candidate_link_score"] = pd.to_numeric(
+            df["final_candidate_link_score"], errors="coerce"
+        ).fillna(0)
+
+    if "candidate_rank" in df.columns:
+        df["candidate_rank"] = pd.to_numeric(
+            df["candidate_rank"], errors="coerce"
+        ).fillna(9999).astype(int)
+
+    if "external_entity" in df.columns:
+        df["external_entity"] = df["external_entity"].astype(str).str.strip()
+
+    if "indicator" in df.columns:
+        df["indicator"] = df["indicator"].astype(str).str.strip()
+
+    if "candidate_ipmr_project_title" in df.columns:
+        df["candidate_ipmr_project_title"] = df["candidate_ipmr_project_title"].astype(str).str.strip()
+
+    return df
+
+
+def ipmr_load_data():
+    candidate_links = ipmr_clean_df(ipmr_load_csv(IPMR_CANDIDATE_LINKS_FILE))
+    best_links = ipmr_clean_df(ipmr_load_csv(IPMR_BEST_LINKS_FILE))
+    external_features = ipmr_clean_df(ipmr_load_csv(IPMR_EXTERNAL_FEATURES_FILE))
+    project_features = ipmr_clean_df(ipmr_load_csv(IPMR_PROJECT_FEATURES_FILE))
+    framework = ipmr_clean_df(ipmr_load_csv(IPMR_FRAMEWORK_FILE))
+
+    return {
+        "candidate_links": candidate_links,
+        "best_links": best_links,
+        "external_features": external_features,
+        "project_features": project_features,
+        "framework": framework,
+    }
+
+
+def ipmr_truncate(text, n=80):
+    text = str(text or "")
+    if len(text) <= n:
+        return text
+    return text[: n - 3] + "..."
+
+
+def ipmr_clean_hover_text(text, max_chars=900):
+    text = str(text or "")
+    text = text.replace("\n", " ").replace("\r", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) > max_chars:
+        text = text[:max_chars] + "..."
+    return html_lib.escape(text)
+
+
+def ipmr_wrap_hover_text(text, width=85, max_chars=900):
+    """
+    Wrap long hover text into multiple HTML lines for Plotly hover boxes.
+    """
+    text = str(text or "")
+    text = text.replace("\n", " ").replace("\r", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+
+    if len(text) > max_chars:
+        text = text[:max_chars] + "..."
+
+    words = text.split(" ")
+    lines = []
+    current = ""
+
+    for word in words:
+        if len(current) + len(word) + 1 <= width:
+            current = (current + " " + word).strip()
+        else:
+            if current:
+                lines.append(current)
+            current = word
+
+    if current:
+        lines.append(current)
+
+    return "<br>".join(html_lib.escape(line) for line in lines)
+
+
+def ipmr_hover_wrapped(label, value, width=85, max_chars=900):
+    wrapped = ipmr_wrap_hover_text(value, width=width, max_chars=max_chars)
+    if not wrapped:
+        wrapped = "N/A"
+    return f"<b>{html_lib.escape(str(label))}</b>:<br>{wrapped}"
+
+
+def ipmr_hover_line(label, value, max_chars=900):
+    value = ipmr_clean_hover_text(value, max_chars=max_chars)
+    if not value:
+        value = "N/A"
+    return f"<b>{html_lib.escape(str(label))}</b>: {value}"
+
+
+def ipmr_parse_json_list(value):
+    if value is None or pd.isna(value):
+        return []
+
+    if isinstance(value, list):
+        return value
+
+    text = str(value).strip()
+    if not text:
+        return []
+
+    try:
+        parsed = ast.literal_eval(text)
+        if isinstance(parsed, list):
+            return parsed
+    except Exception:
+        pass
+
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, list):
+            return parsed
+    except Exception:
+        pass
+
+    return []
+
+
+def ipmr_format_evidence_phrases(value, max_items=4):
+    phrases = parse_evidence_phrases(value)
+
+    if not phrases:
+        return "N/A"
+
+    out = []
+    for i, phrase in enumerate(phrases[:max_items], start=1):
+        out.append(f"{i}. {ipmr_wrap_hover_text(phrase, width=75, max_chars=260)}")
+
+    if len(phrases) > max_items:
+        out.append(f"... {len(phrases) - max_items} additional phrase(s)")
+
+    return "<br><br>".join(out)
+
+
+def ipmr_format_top_framework_elements(row, max_items=3):
+    """
+    Shows top matching IPMR framework elements in readable wrapped format.
+    Preferred source: top_framework_elements_json.
+    Fallback: best_element fields.
+    """
+    elements = ipmr_parse_json_list(row.get("top_framework_elements_json", ""))
+
+    out = []
+
+    if elements:
+        for i, el in enumerate(elements[:max_items], start=1):
+            if not isinstance(el, dict):
+                continue
+
+            element_type = ipmr_clean_hover_text(el.get("element_type", ""), 80)
+            element_score = ipmr_clean_hover_text(el.get("element_match_score", ""), 30)
+            element_name = ipmr_wrap_hover_text(el.get("element_name", ""), width=75, max_chars=180)
+            element_desc = ipmr_wrap_hover_text(el.get("element_description", ""), width=75, max_chars=420)
+
+            out.append(
+                f"<b>{i}. {element_type or 'Framework element'}</b> "
+                f"(score: {element_score or 'N/A'})"
+                f"<br><b>Name:</b><br>{element_name or 'N/A'}"
+                f"<br><b>Description:</b><br>{element_desc or 'No description'}"
+            )
+
+        if out:
+            return "<br><br>".join(out)
+
+    element_type = ipmr_clean_hover_text(row.get("best_element_type", ""), 80)
+    element_score = ipmr_clean_hover_text(row.get("best_element_match_score", ""), 30)
+    element_name = ipmr_wrap_hover_text(row.get("best_element_name", ""), width=75, max_chars=180)
+    element_desc = ipmr_wrap_hover_text(row.get("best_element_description", ""), width=75, max_chars=420)
+
+    if not element_type and not element_desc:
+        return "N/A"
+
+    return (
+        f"<b>1. {element_type or 'Framework element'}</b> "
+        f"(score: {element_score or 'N/A'})"
+        f"<br><b>Name:</b><br>{element_name or 'N/A'}"
+        f"<br><b>Description:</b><br>{element_desc or 'No description'}"
+    )
+
+
+def ipmr_external_hover(row):
+    return (
+        "<b>External document</b><br>"
+        + ipmr_wrap_hover_text(row.get("external_title", ""), width=80, max_chars=280)
+        + "<br><br>"
+        + ipmr_hover_line("Indicator", row.get("indicator", ""), 140)
+        + "<br>"
+        + ipmr_hover_line("Country/entity", row.get("external_entity", ""), 140)
+        + "<br>"
+        + ipmr_hover_line("Time window", row.get("external_time_window", ""), 80)
+        + "<br>"
+        + ipmr_hover_line("UNEP attribution score", row.get("external_unep_attribution_score", ""), 80)
+        + "<br><br>"
+        + ipmr_hover_wrapped(
+            "UNEP attribution justification",
+            row.get("external_unep_justification", ""),
+            width=80,
+            max_chars=700,
+        )
+        + "<br><br>"
+        + "<b>Evidence phrases</b>:<br>"
+        + ipmr_format_evidence_phrases(row.get("external_evidence_phrases", ""), max_items=4)
+        + "<br><br>"
+        + ipmr_hover_wrapped("External URL", row.get("external_link", ""), width=80, max_chars=260)
+        + "<br><br><i>Click this external node/link to open the source URL.</i>"
+    )
+
+
+def ipmr_project_hover(row):
+    return (
+        "<b>Candidate IPMR project</b>"
+        + "<br>"
+        + ipmr_wrap_hover_text(row.get("candidate_ipmr_project_title", ""), width=80, max_chars=260)
+        + "<br><br>"
+        + ipmr_hover_line("Project number", row.get("candidate_ipmr_project_number", ""), 160)
+        + "<br>"
+        + ipmr_hover_line("Functional area", row.get("candidate_ipmr_functional_area", ""), 200)
+        + "<br>"
+        + ipmr_hover_wrapped("Geography", row.get("candidate_ipmr_geo_tags", ""), width=80, max_chars=260)
+        + "<br>"
+        + ipmr_hover_line("SDGs", row.get("candidate_ipmr_sdg_tags", ""), 180)
+        + "<br>"
+        + ipmr_hover_line("Candidate score", row.get("final_candidate_link_score", ""), 80)
+        + "<br><br>"
+        + ipmr_hover_wrapped(
+            "Reported / expected IPMR result-change",
+            row.get("ipmr_ai_result_or_change_described", ""),
+            width=80,
+            max_chars=700,
+        )
+        + "<br><br>"
+        + "<b>Top matching IPMR framework elements</b>:<br>"
+        + ipmr_format_top_framework_elements(row, max_items=3)
+        + "<br><br>"
+        + ipmr_hover_wrapped(
+            "Match explanation",
+            row.get("match_explanation", ""),
+            width=80,
+            max_chars=550,
+        )
+    )
+
+
+def ipmr_options_from_col(df, col, include_all=True):
+    if df is None or df.empty or col not in df.columns:
+        return [{"label": "All", "value": "__ALL__"}] if include_all else []
+
+    vals = sorted([
+        str(x).strip()
+        for x in df[col].dropna().unique()
+        if str(x).strip() and str(x).strip().lower() not in ["nan", "none"]
+    ])
+
+    opts = [{"label": x, "value": x} for x in vals]
+
+    if include_all:
+        opts = [{"label": "All", "value": "__ALL__"}] + opts
+
+    return opts
+
+
+def ipmr_filter_links(df, indicator, country, rank_mode, min_score, project):
+    if df is None or df.empty:
+        return pd.DataFrame()
+
+    out = df.copy()
+
+    if indicator and indicator != "__ALL__" and "indicator" in out.columns:
+        out = out[out["indicator"].astype(str) == str(indicator)]
+
+    if country and country != "__ALL__" and "external_entity" in out.columns:
+        out = out[out["external_entity"].astype(str) == str(country)]
+
+    if project and project != "__ALL__" and "candidate_ipmr_project_title" in out.columns:
+        out = out[out["candidate_ipmr_project_title"].astype(str) == str(project)]
+
+    if min_score is not None and "final_candidate_link_score" in out.columns:
+        out = out[out["final_candidate_link_score"] >= float(min_score)]
+
+    if rank_mode == "rank1" and "candidate_rank" in out.columns:
+        out = out[out["candidate_rank"] == 1]
+
+    if "final_candidate_link_score" in out.columns:
+        out = out.sort_values("final_candidate_link_score", ascending=False)
+
+    return out
+
+
+def ipmr_make_summary_cards(best_df, candidate_df):
+    if best_df is None:
+        best_df = pd.DataFrame()
+    if candidate_df is None:
+        candidate_df = pd.DataFrame()
+
+    docs_count = (
+        best_df["external_doc_id"].nunique()
+        if not best_df.empty and "external_doc_id" in best_df.columns
+        else 0
+    )
+
+    candidate_count = len(candidate_df)
+
+    project_count = (
+        candidate_df["candidate_ipmr_project_title"].nunique()
+        if not candidate_df.empty and "candidate_ipmr_project_title" in candidate_df.columns
+        else 0
+    )
+
+    if not best_df.empty and "final_candidate_link_score" in best_df.columns:
+        avg_best_score = round(best_df["final_candidate_link_score"].mean(), 2)
+    else:
+        avg_best_score = "N/A"
+
+    return dbc.Row(
+        [
+            dbc.Col(
+                metric_card(
+                    "External UNEP-attributed documents",
+                    docs_count,
+                    "Documents with at least one candidate IPMR link",
+                ),
+                md=3,
+            ),
+            dbc.Col(
+                metric_card(
+                    "Candidate links generated",
+                    candidate_count,
+                    "Top candidate projects across documents",
+                ),
+                md=3,
+            ),
+            dbc.Col(
+                metric_card(
+                    "IPMR projects matched",
+                    project_count,
+                    "Distinct candidate projects",
+                ),
+                md=3,
+            ),
+            dbc.Col(
+                metric_card(
+                    "Average best-link score",
+                    avg_best_score,
+                    "Score is not a probability",
+                ),
+                md=3,
+            ),
+        ],
+        className="g-3 mb-3",
+    )
+
+
+def ipmr_make_sankey(df):
+    if df is None or df.empty:
+        return empty_fig("No candidate links available for visual linkage.")
+
+    needed = [
+        "external_title",
+        "external_link",
+        "candidate_ipmr_project_title",
+        "final_candidate_link_score",
+    ]
+
+    if not all(c in df.columns for c in needed):
+        return empty_fig("Required linkage columns are missing.")
+
+    view = df.copy()
+
+    if "candidate_rank" in view.columns:
+        view = view[view["candidate_rank"] == 1].copy()
+
+    #view = view.sort_values("final_candidate_link_score", ascending=False).head(35)
+    view = view.sort_values("final_candidate_link_score", ascending=False)
+
+    if view.empty:
+        return empty_fig("No rank-1 candidate links available.")
+
+    node_labels = []
+    node_customdata = []
+    node_key_to_index = {}
+
+    def add_node(key, label, customdata):
+        if key not in node_key_to_index:
+            node_key_to_index[key] = len(node_labels)
+            node_labels.append(label)
+            node_customdata.append(customdata)
+        return node_key_to_index[key]
+
+    sources = []
+    targets = []
+    values = []
+    link_customdata = []
+
+    for _, row in view.iterrows():
+        external_title = str(row.get("external_title", "Untitled evidence") or "Untitled evidence")
+        external_url = str(row.get("external_link", "") or "").strip()
+
+        project_title = str(
+            row.get("candidate_ipmr_project_title", "Untitled IPMR project")
+            or "Untitled IPMR project"
+        )
+
+        external_key = "external::" + str(row.get("external_doc_id", external_title))
+        project_key = (
+            "project::"
+            + str(row.get("candidate_ipmr_project_number", project_title))
+            + "::"
+            + project_title
+        )
+
+        external_label = "External: " + ipmr_truncate(external_title, 62)
+        project_label = "IPMR: " + ipmr_truncate(project_title, 62)
+
+        external_idx = add_node(
+            external_key,
+            external_label,
+            [
+                external_url,
+                "external",
+                ipmr_external_hover(row),
+                external_title,
+            ],
+        )
+
+        project_idx = add_node(
+            project_key,
+            project_label,
+            [
+                "",
+                "ipmr_project",
+                ipmr_project_hover(row),
+                project_title,
+            ],
+        )
+
+        score = get_numeric(row.get("final_candidate_link_score", 0), 0)
+        visual_value = max(score, 0.05)
+
+        sources.append(external_idx)
+        targets.append(project_idx)
+        values.append(visual_value)
+
+        link_hover = (
+            "<b>External evidence → IPMR candidate project</b>"
+            + "<br><br>"
+            + ipmr_hover_wrapped("External document", row.get("external_title", ""), width=80, max_chars=220)
+            + "<br><br>"
+            + ipmr_hover_wrapped("Candidate IPMR project", row.get("candidate_ipmr_project_title", ""), width=80, max_chars=220)
+            + "<br><br>"
+            + ipmr_hover_line("Candidate link score", row.get("final_candidate_link_score", ""), 80)
+            + "<br>"
+            + ipmr_hover_line("Best framework element", row.get("best_element_type", ""), 80)
+            + "<br><br>"
+            + "<i>Hover directly over the IPMR project node for detailed project result/change and top framework elements.</i>"
+        )
+
+        link_customdata.append(
+            [
+                external_url,
+                "link",
+                link_hover,
+                external_title,
+            ]
+        )
+
+    fig = go.Figure(
+        data=[
+            go.Sankey(
+                arrangement="snap",
+                node=dict(
+                    pad=18,
+                    thickness=18,
+                    line=dict(width=0.5),
+                    label=node_labels,
+                    customdata=node_customdata,
+                    hovertemplate="%{customdata[2]}<extra></extra>",
+                ),
+                link=dict(
+                    source=sources,
+                    target=targets,
+                    value=values,
+                    customdata=link_customdata,
+                    hovertemplate="%{customdata[2]}<br><br><b>Candidate link score</b>: %{value:.2f}<extra></extra>",
+                ),
+            )
+        ]
+    )
+
+    fig.update_layout(
+        title="External UNEP-attributed evidence → candidate IPMR projects",
+        height=950,
+        font=dict(size=11),
+        margin=dict(l=10, r=10, t=60, b=220),
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_family="Arial",
+            align="left",
+        ),
+    )
+
+    return fig
+
+
+def ipmr_main_display_cols():
+    return [
+        "indicator",
+        "external_entity",
+        "external_time_window",
+        "external_title",
+        "external_link",
+        "external_unep_attribution_score",
+        "external_unep_justification",
+        "external_evidence_phrases",
+        "external_ai_result_or_change_described",
+        "candidate_rank",
+        "candidate_ipmr_project_title",
+        "candidate_ipmr_project_number",
+        "candidate_ipmr_functional_area",
+        "candidate_ipmr_geo_tags",
+        "candidate_ipmr_sdg_tags",
+        "ipmr_ai_result_or_change_described",
+        "best_element_type",
+        "best_element_name",
+        "best_element_description",
+        "best_element_match_score",
+        "top_framework_elements_json",
+        "final_candidate_link_score",
+        "match_explanation",
+        "review_status",
+        "reviewer_notes",
+    ]
+
+
+def ipmr_project_feature_cols():
+    return [
+        "ipmr_project_id",
+        "ipmr_project_number",
+        "ipmr_project_title",
+        "ipmr_status",
+        "ipmr_responsible_section",
+        "ipmr_functional_area",
+        "ipmr_geo_tags",
+        "ipmr_sdg_tags",
+        "fw_total_count",
+        "fw_outcome_count",
+        "fw_output_count",
+        "fw_activity_count",
+        "ipmr_ai_short_summary",
+        "ipmr_ai_main_theme",
+        "ipmr_ai_environmental_domain",
+        "ipmr_ai_countries_or_entities",
+        "ipmr_ai_sdgs",
+        "ipmr_ai_policy_or_instrument_names",
+        "ipmr_ai_action_types",
+        "ipmr_ai_result_or_change_described",
+        "ipmr_ai_implementation_mechanisms",
+        "ipmr_ai_keywords",
+        "ipmr_ai_confidence",
+    ]
+
+
+def ipmr_external_feature_cols():
+    return [
+        "indicator",
+        "external_doc_id",
+        "Entity",
+        "TimeWindow",
+        "Title",
+        "Link",
+        "external_ai_short_summary",
+        "external_ai_main_theme",
+        "external_ai_environmental_domain",
+        "external_ai_countries_or_entities",
+        "external_ai_sdgs",
+        "external_ai_policy_or_instrument_names",
+        "external_ai_action_types",
+        "external_ai_result_or_change_described",
+        "external_ai_unep_role",
+        "external_ai_unep_attribution_type",
+        "external_ai_unep_attribution_evidence",
+        "external_ai_implementation_mechanisms",
+        "external_ai_keywords",
+        "external_ai_confidence",
+    ]
+
+
+def ipmr_select_cols(df, cols):
+    if df is None or df.empty:
+        return pd.DataFrame()
+    return df[[c for c in cols if c in df.columns]].copy()
+
+
+def ipmr_gate_layout():
+    passcode_is_configured = bool(ipmr_get_passcode())
+
+    return html.Div(
+        [
+            html.H2("🔐 IPMR Project Linkage — Internal Validation Layer"),
+
+            dbc.Alert(
+                [
+                    html.Strong("Internal section. "),
+                    html.Span(
+                        "This section links external UNEP-attributed evidence to possible internal IPMR projects "
+                        "and framework elements. These are AI-assisted candidate matches and require additional "
+                        "validation, such as human review or, later, supervised machine-learning validation."
+                    ),
+                ],
+                color="warning",
+                className="mb-3",
+            ),
+
+            dbc.Card(
+                dbc.CardBody(
+                    [
+                        html.H5("Enter passcode to view IPMR linkage results"),
+
+                        html.P(
+                            "This passcode protects only the IPMR linkage section. The rest of the dashboard remains open.",
+                            className="text-muted",
+                        ),
+
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dcc.Input(
+                                        id="ipmr-passcode",
+                                        type="password",
+                                        placeholder="Enter IPMR section passcode",
+                                        className="form-control",
+                                        n_submit=0,
+                                    ),
+                                    md=5,
+                                ),
+                                dbc.Col(
+                                    dbc.Button(
+                                        "Unlock IPMR section",
+                                        id="ipmr-passcode-submit",
+                                        color="primary",
+                                    ),
+                                    md=3,
+                                ),
+                            ],
+                            className="g-2 mb-2",
+                        ),
+
+                        html.Div(
+                            "Passcode is not configured on the server. Set IPMR_SECTION_PASSCODE in Render environment variables or in your local .env file."
+                            if not passcode_is_configured else "",
+                            className="text-danger",
+                            style={"fontSize": "13px"},
+                        ),
+
+                        html.Div(id="ipmr-auth-message"),
+                    ]
+                ),
+                className="mb-3",
+            ),
+
+            dcc.Store(id="ipmr-auth-state", data={"authenticated": False}),
+            html.Div(id="ipmr-private-content"),
+        ]
+    )
+
+
+def ipmr_private_layout():
+    data = ipmr_load_data()
+    candidate_df = data["candidate_links"]
+    best_df = data["best_links"]
+
+    if candidate_df.empty or best_df.empty:
+        return dbc.Alert(
+            [
+                html.Strong("IPMR linkage files not found or empty. "),
+                html.Span(
+                    "Please copy the V3 output CSV files into data/ipmr_linkage/ and redeploy/restart the app."
+                ),
+            ],
+            color="danger",
+        )
+
+    indicator_options = ipmr_options_from_col(candidate_df, "indicator")
+    country_options = ipmr_options_from_col(candidate_df, "external_entity")
+    project_options = ipmr_options_from_col(candidate_df, "candidate_ipmr_project_title")
+
+    return html.Div(
+        [
+            html.Div(id="ipmr-open-url-dummy", style={"display": "none"}),
+
+            html.H3("External UNEP-attributed evidence ↔ IPMR project candidate linkage"),
+
+            dcc.Markdown(
+                """
+This section supports **internal validation and triangulation**. It starts from external documents
+where UNEP attribution was detected, then shows candidate IPMR projects and the best matching
+project framework element.
+
+The score is a **candidate link score**, not a probability and not a final attribution claim.
+                """
+            ),
+
+            ipmr_make_summary_cards(best_df, candidate_df),
+
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            html.Label("Indicator"),
+                            dcc.Dropdown(
+                                id="ipmr-filter-indicator",
+                                options=indicator_options,
+                                value="__ALL__",
+                                clearable=False,
+                            ),
+                        ],
+                        md=2,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("External country/entity"),
+                            dcc.Dropdown(
+                                id="ipmr-filter-country",
+                                options=country_options,
+                                value="__ALL__",
+                                clearable=False,
+                            ),
+                        ],
+                        md=2,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("IPMR project"),
+                            dcc.Dropdown(
+                                id="ipmr-filter-project",
+                                options=project_options,
+                                value="__ALL__",
+                                clearable=False,
+                            ),
+                        ],
+                        md=3,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("Candidate rank"),
+                            dcc.RadioItems(
+                                id="ipmr-filter-rank",
+                                options=[
+                                    {"label": "Best only", "value": "rank1"},
+                                    {"label": "All top candidates", "value": "all"},
+                                ],
+                                value="rank1",
+                                inline=False,
+                            ),
+                        ],
+                        md=2,
+                    ),
+                    dbc.Col(
+                        [
+                            html.Label("Minimum score"),
+                            dcc.Slider(
+                                id="ipmr-filter-min-score",
+                                min=0,
+                                max=1,
+                                step=0.05,
+                                value=0,
+                                marks={
+                                    0: "0",
+                                    0.5: "0.5",
+                                    0.7: "0.7",
+                                    1: "1",
+                                },
+                                tooltip={"placement": "bottom", "always_visible": False},
+                            ),
+                        ],
+                        md=3,
+                    ),
+                ],
+                className="g-3 mb-4",
+            ),
+
+            dcc.Tabs(
+                id="ipmr-linkage-tabs",
+                value="overview",
+                children=[
+                    dcc.Tab(label="Overview", value="overview"),
+                    dcc.Tab(label="Best candidate links", value="best"),
+                    dcc.Tab(label="All candidate links", value="all"),
+                    dcc.Tab(label="Visual linkage", value="visual"),
+                    dcc.Tab(label="Feature explorer", value="features"),
+                ],
+                className="mb-3",
+            ),
+
+            html.Div(id="ipmr-linkage-content"),
+
+            html.Hr(),
+
+            dbc.Alert(
+                [
+                    html.Strong("Review guidance: "),
+                    html.Span(
+                        "Use the best-candidate table first. Open the external evidence link, review the match explanation, "
+                        "then compare the proposed IPMR project and best matching framework element. Confirm only after human review."
+                    ),
+                ],
+                color="info",
+            ),
+        ]
+    )
+
+
+def ipmr_extract_customdata_from_plotly_event(event_data):
+    """
+    Extract source information from Plotly hoverData/clickData.
+
+    Works with:
+    - customdata from Sankey nodes/links
+    - hovertext/customdata text that contains an External URL
+    """
+
+    if not event_data or "points" not in event_data or not event_data["points"]:
+        return None
+
+    point = event_data["points"][0]
+
+    # --------------------------------------------------------
+    # 1. First try Plotly customdata
+    # --------------------------------------------------------
+    customdata = point.get("customdata")
+
+    if isinstance(customdata, list):
+        # Normal case:
+        # ["https://...", "external", "hover text", "title"]
+        if len(customdata) >= 4 and isinstance(customdata[0], str):
+            return customdata
+
+        # Nested case:
+        # [["https://...", "external", "hover text", "title"]]
+        if len(customdata) > 0 and isinstance(customdata[0], list):
+            inner = customdata[0]
+            if len(inner) >= 4:
+                return inner
+
+    # --------------------------------------------------------
+    # 2. Fallback: extract URL from hover text
+    # --------------------------------------------------------
+    possible_text_parts = []
+
+    for key in ["hovertext", "text", "label", "customdata"]:
+        value = point.get(key)
+        if value is not None:
+            possible_text_parts.append(str(value))
+
+    raw_text = " ".join(possible_text_parts)
+
+    # Sometimes the hover HTML is inside customdata list values
+    if isinstance(customdata, list):
+        raw_text += " " + " ".join([str(x) for x in customdata])
+
+    # Remove escaped / HTML line breaks but keep URL text
+    clean_raw = html_lib.unescape(raw_text)
+    clean_raw = re.sub(r"<br\s*/?>", " ", clean_raw)
+    clean_raw = re.sub(r"<[^>]+>", " ", clean_raw)
+    clean_raw = re.sub(r"\s+", " ", clean_raw).strip()
+
+    url_match = re.search(r"https?://[^\s<>\]'\"]+", clean_raw)
+
+    if not url_match:
+        return None
+
+    url = url_match.group(0).strip()
+
+    # Try to extract a title from the hover text
+    title = ""
+    title_match = re.search(
+        r"External document\s*[:\n ]+(.*?)(?:Indicator|Country/entity|Time window|UNEP attribution score|$)",
+        clean_raw,
+        flags=re.IGNORECASE,
+    )
+
+    if title_match:
+        title = title_match.group(1).strip()
+    else:
+        title = point.get("label", "") or "External document"
+
+    return [
+        url,
+        "external",
+        clean_raw,
+        title,
+    ]
+
+def ipmr_make_external_source_card(customdata):
+    if not customdata:
+        return dbc.Alert(
+            "No source information found for this item. Hover over an external document node or Sankey link.",
+            color="light",
+        )
+
+    url = str(customdata[0] or "").strip()
+    item_type = str(customdata[1] or "").strip()
+    hover_html = str(customdata[2] or "").strip()
+    title = str(customdata[3] or "").strip()
+
+    if not url.startswith("http://") and not url.startswith("https://"):
+        return dbc.Alert(
+            "This item is an internal IPMR project node and does not have an external source URL. "
+            "Hover over the left-side external document node or the link line instead.",
+            color="secondary",
+        )
+
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.Div(
+                    [
+                        dbc.Badge("External source", color="primary", className="me-2"),
+                        dbc.Badge(item_type or "link", color="secondary"),
+                    ],
+                    className="mb-2",
+                ),
+
+                html.H5(title or "External document", className="mb-2"),
+
+                html.A(
+                    "Open external source document",
+                    href=url,
+                    target="_blank",
+                    className="btn btn-primary btn-sm mb-3",
+                ),
+
+                html.Details(
+                    [
+                        html.Summary("Show extracted hover details"),
+                        html.Div(
+                            dangerously_allow_html=True,
+                            children=hover_html,
+                            style={
+                                "fontSize": "13px",
+                                "marginTop": "8px",
+                                "maxHeight": "280px",
+                                "overflowY": "auto",
+                                "backgroundColor": "#f8fafc",
+                                "padding": "10px",
+                                "borderRadius": "6px",
+                                "border": "1px solid #e5e7eb",
+                            },
+                        ),
+                    ],
+                    open=False,
+                ),
+            ]
+        ),
+        className="mb-2",
+    )
+
+@app.callback(
+    Output("ipmr-auth-state", "data"),
+    Output("ipmr-auth-message", "children"),
+    Input("ipmr-passcode-submit", "n_clicks"),
+    Input("ipmr-passcode", "n_submit"),
+    State("ipmr-passcode", "value"),
+    prevent_initial_call=True,
+)
+def unlock_ipmr_section(n_clicks, n_submit, entered_passcode):
+    expected = ipmr_get_passcode()
+
+    if not expected:
+        return {"authenticated": False}, dbc.Alert(
+            "IPMR_SECTION_PASSCODE is not configured on the server.",
+            color="danger",
+            className="mt-2",
+        )
+
+    if entered_passcode and str(entered_passcode).strip() == expected:
+        return {"authenticated": True}, dbc.Alert(
+            "IPMR section unlocked for this browser session.",
+            color="success",
+            className="mt-2",
+        )
+
+    return {"authenticated": False}, dbc.Alert(
+        "Incorrect passcode.",
+        color="danger",
+        className="mt-2",
+    )
+
+
+@app.callback(
+    Output("ipmr-private-content", "children"),
+    Input("ipmr-auth-state", "data"),
+    prevent_initial_call=False,
+)
+def render_ipmr_private_content(auth_state):
+    if not auth_state or not auth_state.get("authenticated"):
+        return html.Div()
+
+    return ipmr_private_layout()
+
+
+@app.callback(
+    Output("ipmr-linkage-content", "children"),
+    Input("ipmr-linkage-tabs", "value"),
+    Input("ipmr-filter-indicator", "value"),
+    Input("ipmr-filter-country", "value"),
+    Input("ipmr-filter-rank", "value"),
+    Input("ipmr-filter-min-score", "value"),
+    Input("ipmr-filter-project", "value"),
+    prevent_initial_call=False,
+)
+def render_ipmr_linkage_content(tab, indicator, country, rank_mode, min_score, project):
+    data = ipmr_load_data()
+
+    candidate_df = data["candidate_links"]
+    best_df = data["best_links"]
+    external_features_df = data["external_features"]
+    project_features_df = data["project_features"]
+
+    if candidate_df.empty:
+        return dbc.Alert(
+            "No candidate linkage data found. Please check data/ipmr_linkage/external_ipmr_project_candidate_links_v3.csv",
+            color="warning",
+        )
+
+    filtered_candidates = ipmr_filter_links(
+        candidate_df,
+        indicator=indicator,
+        country=country,
+        rank_mode=rank_mode,
+        min_score=min_score,
+        project=project,
+    )
+
+    filtered_best = ipmr_filter_links(
+        best_df,
+        indicator=indicator,
+        country=country,
+        rank_mode="rank1",
+        min_score=min_score,
+        project=project,
+    )
+
+    if tab == "overview":
+        if filtered_candidates.empty:
+            return dbc.Alert("No candidate links match the selected filters.", color="light")
+
+        by_indicator = (
+            filtered_candidates.groupby("indicator")
+            .agg(
+                candidate_links=("external_doc_id", "count"),
+                external_documents=("external_doc_id", "nunique"),
+                candidate_projects=("candidate_ipmr_project_title", "nunique"),
+                average_score=("final_candidate_link_score", "mean"),
+            )
+            .reset_index()
+        )
+
+        by_indicator["average_score"] = by_indicator["average_score"].round(2)
+
+        fig = px.bar(
+            by_indicator,
+            x="indicator",
+            y="external_documents",
+            color="indicator",
+            text="external_documents",
+            title="External UNEP-attributed documents linked to candidate IPMR projects",
+        )
+
+        fig.update_layout(height=420, showlegend=False)
+
+        top_projects = (
+            filtered_candidates.groupby("candidate_ipmr_project_title")
+            .agg(
+                linked_external_documents=("external_doc_id", "nunique"),
+                average_score=("final_candidate_link_score", "mean"),
+            )
+            .reset_index()
+            .sort_values(["linked_external_documents", "average_score"], ascending=False)
+            .head(20)
+        )
+
+        top_projects["average_score"] = top_projects["average_score"].round(2)
+
+        return html.Div(
+            [
+                ipmr_make_summary_cards(filtered_best, filtered_candidates),
+                dbc.Row(
+                    [
+                        dbc.Col(dcc.Graph(figure=fig), md=6),
+                        dbc.Col(
+                            [
+                                html.H5("Top candidate IPMR projects"),
+                                data_table(top_projects, page_size=10),
+                            ],
+                            md=6,
+                        ),
+                    ],
+                    className="g-3",
+                ),
+            ]
+        )
+
+    if tab == "best":
+        if filtered_best.empty:
+            return dbc.Alert("No best-candidate links match the selected filters.", color="light")
+
+        display_df = ipmr_select_cols(filtered_best, ipmr_main_display_cols())
+
+        return html.Div(
+            [
+                html.H4("Best IPMR candidate per external UNEP-attributed evidence document"),
+                dbc.Alert(
+                    "This is the recommended manager-facing view: one external document, one top candidate IPMR project, and one best matching framework element.",
+                    color="secondary",
+                ),
+                data_table(display_df, page_size=15),
+            ]
+        )
+
+    if tab == "all":
+        if filtered_candidates.empty:
+            return dbc.Alert("No candidate links match the selected filters.", color="light")
+
+        display_df = ipmr_select_cols(filtered_candidates, ipmr_main_display_cols())
+
+        return html.Div(
+            [
+                html.H4("All candidate IPMR project links"),
+                dbc.Alert(
+                    "This table shows the top candidate projects per external document. Use score, rank and explanation fields to prioritize review.",
+                    color="secondary",
+                ),
+                data_table(display_df, page_size=20),
+            ]
+        )
+
+    if tab == "visual":
+        return html.Div(
+            [
+                html.H4("Visual linkage map"),
+
+                dbc.Alert(
+                    [
+                        html.Strong("How to read this view: "),
+                        html.Span(
+                            "Hover over an external document or Sankey link to show a fixed clickable review card below. "
+                            "The native Plotly hover pop-up itself is not clickable, but the fixed card is."
+                        ),
+                    ],
+                    color="secondary",
+                ),
+
+                html.Div(
+                    id="ipmr-sankey-click-panel",
+                    children=dbc.Alert(
+                        "Hover over or click an external document/link in the visual map to show the source document here.",
+                        color="light",
+                    ),
+                    style={
+                        "position": "sticky",
+                        "top": "10px",
+                        "zIndex": 999,
+                        "backgroundColor": "white",
+                        "border": "1px solid #e5e7eb",
+                        "borderRadius": "8px",
+                        "padding": "10px",
+                        "marginBottom": "12px",
+                        "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    },
+                ),
+
+                html.Div(
+                    dcc.Graph(
+                        id="ipmr-sankey-graph",
+                        figure=ipmr_make_sankey(filtered_candidates),
+                        config={
+                            "displayModeBar": True,
+                            "responsive": True,
+                        },
+                        style={
+                            "height": "980px",
+                        },
+                    ),
+                    style={
+                        "paddingBottom": "260px",
+                        "marginBottom": "80px",
+                        "overflow": "visible",
+                    },
+                ),
+
+                dbc.Alert(
+                    "Tip: use the fixed card above the graph to open the external source. "
+                    "This is more reliable than trying to click inside the Plotly hover pop-up.",
+                    color="light",
+                    className="mt-2",
+                ),
+            ]
+        )
+
+    if tab == "features":
+        external_view = external_features_df.copy()
+        project_view = project_features_df.copy()
+
+        if indicator and indicator != "__ALL__" and "indicator" in external_view.columns:
+            external_view = external_view[external_view["indicator"].astype(str) == str(indicator)]
+
+        if country and country != "__ALL__":
+            if "Entity" in external_view.columns:
+                external_view = external_view[external_view["Entity"].astype(str) == str(country)]
+
+        if project and project != "__ALL__":
+            if "ipmr_project_title" in project_view.columns:
+                project_view = project_view[project_view["ipmr_project_title"].astype(str) == str(project)]
+
+        return html.Div(
+            [
+                html.H4("Feature explorer"),
+                dbc.Alert(
+                    "This view helps you understand what the AI extracted from external evidence and from IPMR project packages before matching.",
+                    color="secondary",
+                ),
+
+                html.H5("External evidence AI features"),
+                data_table(ipmr_select_cols(external_view, ipmr_external_feature_cols()), page_size=10),
+
+                html.Hr(),
+
+                html.H5("IPMR project AI features"),
+                data_table(ipmr_select_cols(project_view, ipmr_project_feature_cols()), page_size=10),
+            ]
+        )
+
+    return dbc.Alert("Unknown IPMR linkage view.", color="warning")
+
+
+
+@app.callback(
+    Output("ipmr-sankey-click-panel", "children"),
+    Input("ipmr-sankey-graph", "hoverData"),
+    Input("ipmr-sankey-graph", "clickData"),
+    prevent_initial_call=True,
+)
+def update_ipmr_sankey_source_panel(hover_data, click_data):
+    """
+    Shows a fixed clickable card when hovering or clicking a Sankey external node/link.
+
+    Important:
+    hover_data is prioritized because clickData can remain stuck from a previous click.
+    """
+
+    # Try hover first
+    customdata = ipmr_extract_customdata_from_plotly_event(hover_data)
+
+    # If hover did not give a URL, try click
+    if not customdata:
+        customdata = ipmr_extract_customdata_from_plotly_event(click_data)
+
+    return ipmr_make_external_source_card(customdata)
 
 # ============================================================
 # RUN
